@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 import os
 
 upload_blueprint = Blueprint('upload', __name__)
@@ -14,7 +14,12 @@ def upload_file():
     if file.filename == '':
         return jsonify({"error": "未选择文件"}), 400
 
-    filepath = os.path.join(upload_folder, file.filename)
+    user_role = session.get('role')
+    user_folder = os.path.join(upload_folder, user_role)
+
+    os.makedirs(user_folder, exist_ok=True)
+    
+    filepath = os.path.join(user_folder, file.filename)
     file.save(filepath)
 
     return jsonify({"message": "文件上传成功", "filename": file.filename}), 200

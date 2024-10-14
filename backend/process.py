@@ -3,7 +3,7 @@ import pandas as pd
 import os
 
 process_blueprint = Blueprint('process', __name__)
-upload_folder = 'uploads'
+upload_folder = 'uploads1'
 
 @process_blueprint.route('/process', methods=['POST'])
 def process_data():

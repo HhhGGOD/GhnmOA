@@ -3,17 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="icon" href="/frontend/" type="image/x-icon">
-
-    <title>Ghnm数据处理系统</title>
+    <title>Ghnm文件处理</title>
     <style>
         body {
             background-color: #f8f9fa;
             font-family: 'Arial', sans-serif;
-            background-size: cover;
-            background-repeat: no-repeat;
         }
         .container {
             margin-top: 50px;
@@ -21,7 +16,6 @@
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            background-color: rgba(255, 255, 255, 0.8);
         }
         .btn-custom {
             background-color: #007bff;
@@ -34,10 +28,31 @@
 </head>
 <body>
     <div class="container">
-        <h2 class="text-center">欢迎来到Ghnm数据处理系统</h2>
+        <h2 class="text-center">Ghnm文件处理</h2>
         <button onclick="location.href='/filter'" class="btn btn-custom">数据筛选</button>
         <button onclick="location.href='/visualize'" class="btn btn-custom">可视化工具</button>
         <button onclick="location.href='/file_share'" class="btn btn-custom">文件共享</button>
+
     </div>
+
+    <script>
+        document.getElementById('file-share-button').onclick = function() {
+            const username = prompt("请输入用户名:");
+            const password = prompt("请输入密码:");
+
+            fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ username, password })
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/file_share';
+                } else {
+                    alert("登录失败，请检查用户名和密码。");
+                }
+            });
+        }
+    </script>
 </body>
 </html>

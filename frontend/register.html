@@ -2,13 +2,13 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>登录</title>
+    <title>注册</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
     <div class="container">
-        <h2 class="text-center">登录</h2>
-        <form id="login-form">
+        <h2 class="text-center">注册</h2>
+        <form id="register-form">
             <div class="form-group">
                 <label for="username">用户名</label>
                 <input type="text" class="form-control" id="username" required>
@@ -17,17 +17,17 @@
                 <label for="password">密码</label>
                 <input type="password" class="form-control" id="password" required>
             </div>
-            <button type="submit" class="btn btn-primary">登录</button>
-            <a href="/register" class="btn btn-link">注册新账号</a>
+            <button type="submit" class="btn btn-primary">注册</button>
+            <a href="/login" class="btn btn-link">已有账号? 登录</a>
         </form>
     </div>
     <script>
-        document.getElementById('login-form').onsubmit = function(event) {
+        document.getElementById('register-form').onsubmit = function(event) {
             event.preventDefault();
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
-            fetch('/login', {
+            fetch('/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -36,9 +36,10 @@
             })
             .then(response => {
                 if (response.ok) {
-                    window.location.href = '/file_share';
+                    alert('注册成功，请登录！');
+                    window.location.href = '/login';
                 } else {
-                    alert('登录失败: ' + response.statusText);
+                    alert('注册失败: ' + response.statusText);
                 }
             });
         };
