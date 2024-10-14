@@ -1,18 +1,17 @@
 from flask import Flask, send_from_directory, request, jsonify, session, render_template
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash,check_password_hash
 import os
-from backend import app, db, User
+from backend import create_app, db, User
 from backend.auth import auth_blueprint 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
+app =create_app()
 
 app = Flask(__name__,static_folder='frontend/static',template_folder='frontend')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SECRET_KEY'] = '12138'
 app.config['UPLOAD_FOLDER'] = 'uploads'
-
-db = SQLAlchemy(app)
 
 from backend.auth import auth_blueprint
 from backend.upload import upload_blueprint
@@ -42,13 +41,39 @@ def visualize_page():
 
 @app.route('/login', methods=['POST'])
 def login():
-    # 登录逻辑
-    pass
+    username = request.form.get('username')
+    password = request.form.get('password')
+
+    user = User.query.filter_by(username=username).first()
+    
+    # 验证用户和密码
+    if user and check_password_hash(user.password, password):
+        session['user_id'] = user.id  # 登录会话
+        return jsonify({"message": "登录成功"}), 200
+    
+    return jsonify({"error": "用户名或密码错误"}), 401
+
 
 @app.route('/register', methods=['POST'])
 def register():
-    # 注册逻辑
-    pass
+    username = request.form.get('username')
+    password = request.form.get('password')
+    
+    # 检查用户名是否存在
+    if User.query.filter_by(username=username).first():
+        return jsonify({"error": "用户名已存在"}), 400
+
+    # 密码哈希
+    hashed_password = generate_password_hash(password)
+
+    # 创建新用户
+    new_user = User(username=username, password=hashed_password)
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({"message": "注册成功"}), 201
+
+
 
 @app.route('/login')
 def login_page():
@@ -87,7 +112,15 @@ def download_file(filename):
         return jsonify({"error": "未登录"}), 403
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
 
+
+
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()  # 创建数据库表
+        try:
+            db.create_all()  # 创建所有表
+            user_count = db.session.query(User).count()  # 查询用户表中的记录数
+            print(f"连接成功，当前用户数量: {user_count}")
+        except Exception as e:
+            print(f"数据库连接失败: {e}")
+
     app.run(host='0.0.0.0', port=5000, debug=True)
