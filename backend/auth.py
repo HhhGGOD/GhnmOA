@@ -1,31 +1,48 @@
 from flask import Blueprint, request, jsonify, session
-from .models import db, User
-from werkzeug.security import generate_password_hash
+import pandas as pd
+import os
 
 auth_blueprint = Blueprint('auth', __name__)
 
-@auth_blueprint.route('/register', methods=['POST'])
-def register():
-    data = request.json
+users_file = 'users.xlsx'
+
+# 确保用户数据文件存在
+if not os.path.exists(users_file):
+    df = pd.DataFrame(columns=['username', 'password'])
+    df.to_excel(users_file, index=False)
+
+@auth_blueprint.route('/login', methods=['POST'])
+def login_user():
+    data=request.get_json()
     username = data.get('username')
     password = data.get('password')
 
-    if User.query.filter_by(username=username).first():
-        return jsonify({"error": "用户名已存在"}), 409
+    df = pd.read_excel(users_file)
 
-    new_user = User(username=username)
-    new_user.set_password(password)
-    db.session.add(new_user)
-    db.session.commit()
+    user = df[(df['username'] == username) & (df['password'] == password)]
+    
+    if user.empty:
+        return jsonify({"error": "用户名或密码错误"}), 401
 
-    return jsonify({"message": "注册成功"}), 201
+    session['username'] = username
+    return jsonify({"message": "登录成功"}), 200
 
-@auth_blueprint.route('/login', methods=['POST'])
-def login():
-    data = request.json
-    user = User.query.filter_by(username=data['username']).first()
-    if user and user.check_password(data['password']):
-        session['username'] = user.username
-        session['role'] = user.role
-        return jsonify({"message": "登录成功"}), 200
-    return jsonify({"error": "用户名或密码错误"}), 401
+@auth_blueprint.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+
+    df = pd.read_excel(users_file)
+
+    if username in df['username'].values:
+        return jsonify({'error': '用户名已存在!'}), 400
+
+    if not username or not password:
+        return "用户名和密码不能为空", 402
+
+    new_user = pd.DataFrame({'username': [username], 'password': [password]})
+    df = pd.concat([df, new_user], ignore_index=True)
+    df.to_excel(users_file, index=False)
+
+    return jsonify({'message': '注册成功!'}), 201

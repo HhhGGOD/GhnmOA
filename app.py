@@ -4,13 +4,17 @@ import pandas as pd
 from backend import create_app
 from backend.auth import auth_blueprint 
 from flask import Flask
-
+# from flask_cors import CORS
 
 app =create_app()
 
-users_file = 'users.xlsx'
+users_file =  'users.xlsx'
+
+# print("当前目录:", os.getcwd())
+# print("用户文件路径:", users_file)
 
 app = Flask(__name__,static_folder='frontend/static',template_folder='frontend')
+# CORS(app)
 app.config['SECRET_KEY'] = '12138'
 app.config['UPLOAD_FOLDER'] = 'uploads'
 
@@ -47,8 +51,9 @@ def visualize_page():
 
 @app.route('/login', methods=['POST'])
 def login_user():
-    username = request.form.get('username')
-    password = request.form.get('password')
+    data=request.get_json()
+    username = data.get('username')
+    password = data.get('password')
 
     df = pd.read_excel(users_file)
 
@@ -56,6 +61,7 @@ def login_user():
 
     if not user.empty:
         session['username'] = username  # 登录会话
+        print(f"用户名: {username}, 密码: {password}")
         return jsonify({"message": "登录成功"}), 200
     
     return jsonify({"error": "用户名或密码错误"}), 401
@@ -63,8 +69,13 @@ def login_user():
 
 @app.route('/register', methods=['POST'])
 def register():
-    username = request.form.get('username')
-    password = request.form.get('password')
+    data = request.get_json()
+    if data is None:
+        return jsonify({'error': '请求体为空或格式错误'}), 408
+    else: 
+        print("接收到的数据:", data)  # 输出接收到的 JSON 数据
+    username = data.get('username')
+    password = data.get('password')
     
     df = pd.read_excel(users_file)
 
