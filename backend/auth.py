@@ -1,7 +1,6 @@
 from flask import Blueprint, request, jsonify, session
 import pandas as pd
 import os
-import re
 
 auth_blueprint = Blueprint('auth', __name__)
 
@@ -51,9 +50,6 @@ def register():
     password = data.get('password')
 
     df = pd.read_excel(users_file)
-
-    if not re.match(r'^[A-Za-z].*', username):
-        return jsonify({'error': '必须以字母开头!'}), 400
 
     if username in df['username'].values:
         return jsonify({'error': '用户名已存在!'}), 400
