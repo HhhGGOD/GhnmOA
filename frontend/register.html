@@ -5,6 +5,9 @@
     <title>注册</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
+
+
+
 <body>
     <div class="container">
         <h2 class="text-center">注册</h2>
@@ -22,6 +25,23 @@
         </form>
     </div>
     <script>
+
+        // 为用户名输入框添加占位符
+        const usernameInput = document.getElementById('username');
+        usernameInput.placeholder = '用户名需字母开头';
+
+        // 当输入框获得焦点时，清除占位符
+        usernameInput.addEventListener('focus', function() {
+         this.placeholder = '';
+        });
+
+        // 当输入框失去焦点时，检查是否为空，并根据需要恢复占位符
+        usernameInput.addEventListener('blur', function() {
+            if (this.value === '') {
+                this.placeholder = '用户名需字母开头';
+            }
+        });
+
         document.getElementById('register-form').onsubmit = function(event) {
             event.preventDefault();
             const username = document.getElementById('username').value;
