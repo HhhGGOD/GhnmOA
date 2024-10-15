@@ -1,15 +1,16 @@
 from flask import Flask, send_from_directory, request, jsonify, session, render_template
-from werkzeug.security import generate_password_hash,check_password_hash
 import os
-from backend import create_app, db, User
+import pandas as pd
+from backend import create_app
 from backend.auth import auth_blueprint 
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+
 
 app =create_app()
 
+users_file = 'users.xlsx'
+
 app = Flask(__name__,static_folder='frontend/static',template_folder='frontend')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SECRET_KEY'] = '12138'
 app.config['UPLOAD_FOLDER'] = 'uploads'
 
@@ -26,6 +27,11 @@ app.register_blueprint(upload1_blueprint)
 app.register_blueprint(download_blueprint)
 app.register_blueprint(process_blueprint)
 
+# 确保用户数据文件存在
+if not os.path.exists(users_file):
+    df = pd.DataFrame(columns=['username', 'password'])
+    df.to_excel(users_file, index=False)
+
 @app.route('/')
 def index():
     return send_from_directory('frontend', 'index.html')
@@ -40,15 +46,16 @@ def visualize_page():
 
 
 @app.route('/login', methods=['POST'])
-def login():
+def login_user():
     username = request.form.get('username')
     password = request.form.get('password')
 
-    user = User.query.filter_by(username=username).first()
-    
-    # 验证用户和密码
-    if user and check_password_hash(user.password, password):
-        session['user_id'] = user.id  # 登录会话
+    df = pd.read_excel(users_file)
+
+    user = df[(df['username'] == username) & (df['password'] == password)]
+
+    if not user.empty:
+        session['username'] = username  # 登录会话
         return jsonify({"message": "登录成功"}), 200
     
     return jsonify({"error": "用户名或密码错误"}), 401
@@ -59,19 +66,20 @@ def register():
     username = request.form.get('username')
     password = request.form.get('password')
     
-    # 检查用户名是否存在
-    if User.query.filter_by(username=username).first():
-        return jsonify({"error": "用户名已存在"}), 400
+    df = pd.read_excel(users_file)
 
-    # 密码哈希
-    hashed_password = generate_password_hash(password)
-
-    # 创建新用户
-    new_user = User(username=username, password=hashed_password)
-    db.session.add(new_user)
-    db.session.commit()
-
-    return jsonify({"message": "注册成功"}), 201
+    if username in df['username'].values:
+        return jsonify({'error': '用户名已存在!'}), 400
+    
+    if not username or not password:
+        return "用户名和密码不能为空", 402
+    
+    # 添加新用户
+    new_user = pd.DataFrame({'username': [username], 'password': [password]})
+    df = pd.concat([df, new_user], ignore_index=True)
+    df.to_excel(users_file, index=False)
+    
+    return jsonify({'message': '注册成功!'}), 201
 
 
 
@@ -115,12 +123,4 @@ def download_file(filename):
 
 
 if __name__ == '__main__':
-    with app.app_context():
-        try:
-            db.create_all()  # 创建所有表
-            user_count = db.session.query(User).count()  # 查询用户表中的记录数
-            print(f"连接成功，当前用户数量: {user_count}")
-        except Exception as e:
-            print(f"数据库连接失败: {e}")
-
     app.run(host='0.0.0.0', port=5000, debug=True)

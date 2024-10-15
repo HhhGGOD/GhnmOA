@@ -1,17 +1,11 @@
 from flask import Flask
-from .models import db, User
-from flask_sqlalchemy import SQLAlchemy
+from .auth import auth_blueprint
 
 def create_app():
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    db.init_app(app)
+    app.secret_key = '12138'  # 设置密钥以使用闪存消息
 
-    with app.app_context():
-        db.create_all()  # 创建数据库表
-
-    from .auth import auth_blueprint
+    # 注册蓝图
     app.register_blueprint(auth_blueprint)
 
     return app
