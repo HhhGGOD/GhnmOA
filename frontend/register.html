@@ -64,24 +64,42 @@
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
-            console.log("Username:", username);
-            console.log("Password:", password);
+            let valid = true;
+            
+            // document.getElementById('username-error').style.display = 'none';
+            // document.getElementById('password-error').style.display = 'none';
 
-            fetch('/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ username: username, password: password }),
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert('注册成功，请登录！');
-                    window.location.href = '/login';
-                } else {
-                    alert('注册失败: ' + response.statusText);
-                }
-            });
+            if (!/^[a-zA-Z]/.test(username)) {
+                document.getElementById('username-error').style.display = 'block';
+                valid = false;
+            }
+
+            // 检查密码是否以字母开头
+            if (!/^[a-zA-Z]/.test(password)) {
+                document.getElementById('password-error').style.display = 'block';
+                valid = false;
+            }
+
+            if (valid) {
+                console.log("Username:", username);
+                console.log("Password:", password);
+
+                fetch('/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username: username, password: password }),
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert('注册成功，请登录！');
+                        window.location.href = '/login';
+                    } else {
+                        alert('注册失败: ' + response.statusText);
+                    }
+                });
+            };
         };
     </script>
 </body>

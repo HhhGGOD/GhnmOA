@@ -30,7 +30,7 @@ def login_user():
     if not username or not password:
         return jsonify({"error": "Username or password not provided"}), 400
     
-    print(f"Received username: {username}, password: {password}")
+    # print(f"Received username: {username}, password: {password}")
     
     if user.empty:
         return jsonify({"error": "用户名或密码错误"}), 401
@@ -50,8 +50,6 @@ def register():
     password = data.get('password')
 
     df = pd.read_excel(users_file)
-
-
 
     if username in df['username'].values:
         return jsonify({'error': '用户名已存在!'}), 400
