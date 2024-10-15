@@ -48,52 +48,6 @@ def filter_page():
 def visualize_page():
     return send_from_directory('frontend', 'visualize.html')
 
-
-@app.route('/login', methods=['POST'])
-def login_user():
-    data=request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-
-    df = pd.read_excel(users_file)
-
-    user = df[(df['username'] == username) & (df['password'] == password)]
-
-    if not user.empty:
-        session['username'] = username  # 登录会话
-        print(f"用户名: {username}, 密码: {password}")
-        return jsonify({"message": "登录成功"}), 200
-    
-    return jsonify({"error": "用户名或密码错误"}), 401
-
-
-@app.route('/register', methods=['POST'])
-def register():
-    data = request.get_json()
-    if data is None:
-        return jsonify({'error': '请求体为空或格式错误'}), 408
-    else: 
-        print("接收到的数据:", data)  # 输出接收到的 JSON 数据
-    username = data.get('username')
-    password = data.get('password')
-    
-    df = pd.read_excel(users_file)
-
-    if username in df['username'].values:
-        return jsonify({'error': '用户名已存在!'}), 400
-    
-    if not username or not password:
-        return "用户名和密码不能为空", 402
-    
-    # 添加新用户
-    new_user = pd.DataFrame({'username': [username], 'password': [password]})
-    df = pd.concat([df, new_user], ignore_index=True)
-    df.to_excel(users_file, index=False)
-    
-    return jsonify({'message': '注册成功!'}), 201
-
-
-
 @app.route('/login')
 def login_page():
     return render_template('login.html')

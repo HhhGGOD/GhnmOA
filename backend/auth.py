@@ -11,15 +11,26 @@ if not os.path.exists(users_file):
     df = pd.DataFrame(columns=['username', 'password'])
     df.to_excel(users_file, index=False)
 
+
 @auth_blueprint.route('/login', methods=['POST'])
 def login_user():
+    
     data=request.get_json()
-    username = data.get('username')
-    password = data.get('password')
+    username = data.get('username','').strip()
+    password = data.get('password','').strip()
 
     df = pd.read_excel(users_file)
+    # print("Users in Excel:", df) 
 
+    # print(f"Looking for username: {username} and password: {password}")
     user = df[(df['username'] == username) & (df['password'] == password)]
+    # print(f"User found: {not user.empty}")  # 查看是否找到了用户
+
+
+    if not username or not password:
+        return jsonify({"error": "Username or password not provided"}), 400
+    
+    # print(f"Received username: {username}, password: {password}")
     
     if user.empty:
         return jsonify({"error": "用户名或密码错误"}), 401
@@ -27,9 +38,14 @@ def login_user():
     session['username'] = username
     return jsonify({"message": "登录成功"}), 200
 
+
 @auth_blueprint.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
+    # if data is None:
+    #     return jsonify({'error': '请求体为空或格式错误'}), 408
+    # else: 
+    #     print("接收到的数据:", data)  # 输出接收到的 JSON 数据
     username = data.get('username')
     password = data.get('password')
 
