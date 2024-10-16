@@ -71,12 +71,14 @@
 
             if (!/^[a-zA-Z]/.test(username)) {
                 document.getElementById('username-error').style.display = 'block';
+                alert('用户名需字母开头');
                 valid = false;
             }
 
             // 检查密码是否以字母开头
             if (!/^[a-zA-Z]/.test(password)) {
                 document.getElementById('password-error').style.display = 'block';
+                alert('密码需字母开头');
                 valid = false;
             }
 
